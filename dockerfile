@@ -24,6 +24,9 @@ WORKDIR /var/www/html
 # Copy existing application directory contents
 COPY . /var/www/html
 
+# Configure Apache to listen on 127.0.0.1
+RUN echo "Listen 127.0.0.1:80" >> /etc/apache2/ports.conf
+
 # Install dependencies
 RUN composer install --no-scripts --no-interaction --prefer-dist
 
