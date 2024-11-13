@@ -29,7 +29,12 @@ RUN composer install --no-scripts --no-interaction --prefer-dist
 RUN chown -R www-data:www-data /var/www/html
 
 # Configure Apache
-COPY .docker/apache/default.conf /etc/apache2/sites-available/000-default.conf
+RUN echo "<VirtualHost *:80>\
+    DocumentRoot /var/www/html/public\
+    <Directory /var/www/html/public>\
+        AllowOverride All\
+    </Directory>\
+</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 RUN a2ensite 000-default.conf
 
