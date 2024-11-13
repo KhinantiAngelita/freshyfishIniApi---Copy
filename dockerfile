@@ -24,9 +24,6 @@ WORKDIR /var/www/html
 # Copy existing application directory contents
 COPY . /var/www/html
 
-# Configure Apache to listen on 127.0.0.1
-RUN echo "Listen 0.0.0.0:3000" >> /etc/apache2/ports.conf
-
 # Install dependencies
 RUN composer install --no-scripts --no-interaction --prefer-dist
 
@@ -47,7 +44,7 @@ ENV DB_USERNAME=mysql
 ENV DB_PASSWORD=MOfpJB30KYXnQHoWqpwWUV1Ung43ucwqnQIAThcuWMIHJCb3AUxCIE76J0Yp4vby
 
 # Expose port
-EXPOSE 3000
+EXPOSE 80
 
 # Start server
 CMD ["apache2-foreground"]
