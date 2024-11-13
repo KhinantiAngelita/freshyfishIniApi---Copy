@@ -19,7 +19,7 @@ services:
       - DB_USERNAME=mysql
       - DB_PASSWORD=gpHdRCtZZASaDoX3ySXHb0wSE0JrPij3FBOgYe5zJl2yzoTSFYvG09aKJgWI2zAJ
     ports:
-      - '80:80'
+      - '8080:8080'
     networks:
       - laravel_net
 networks:
