@@ -23,7 +23,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-scripts --no-interaction --prefer-dist
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Optimize Laravel
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
 
 # Install Nginx
 RUN apt-get update && apt-get install -y nginx
