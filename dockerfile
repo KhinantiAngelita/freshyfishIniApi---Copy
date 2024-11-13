@@ -1,43 +1,39 @@
-# Use an official PHP runtime as a parent image
-FROM php:7.4-fpm
-
-# Set the working directory in the container
-WORKDIR /var/www
+# Use an official PHP image with Apache
+FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
     libpng-dev \
-    libjpeg62-turbo-dev \
+    libjpeg-dev \
     libfreetype6-dev \
-    locales \
     zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
     unzip \
-    git \
-    curl \
-    libonig-dev \
-    libzip-dev
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Enable Apache rewrite module
+RUN a2enmod rewrite
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy the existing application
+COPY . .
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copy existing application directory contents
-COPY . /var/www
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
 
-# Copy existing application directory permissions
-COPY --chown=www-data:www-data . /var/www
+# Generate key (if not done already in your .env)
+RUN php artisan key:generate
 
-# Change current user to www
-USER www-data
+# Set permissions for Laravel
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port 80 and start php-fpm server
+# Expose port 80
 EXPOSE 80
-CMD ["php-fpm"]
+
+# Start Apache
+CMD ["apache2-foreground"]

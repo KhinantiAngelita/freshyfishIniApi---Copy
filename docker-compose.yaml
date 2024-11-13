@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   app:
-    image: 'dzackyfhadafi/freshyfish:latest'
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: freshyfish_api
     restart: always
     volumes:
