@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  app:
+    image: 'dzackyfhadafi/freshyfish:latest'
+    container_name: freshyfish_api
+    restart: always
+    volumes:
+      - './storage:/var/www/html/storage'
+      - './.env:/var/www/html/.env'
+    environment:
+      - APP_ENV=production
+      - 'APP_KEY=base64:aN0SoZD0TlwxkMDtuwtOOn+jP2clnOhI96e9nR1uKDU='
+      - DB_CONNECTION=mysql
+      - DB_HOST=po8o0oggc48888gccck0go4w
+      - DB_PORT=3306
+      - DB_DATABASE=default
+      - DB_USERNAME=mysql
+      - DB_PASSWORD=gpHdRCtZZASaDoX3ySXHb0wSE0JrPij3FBOgYe5zJl2yzoTSFYvG09aKJgWI2zAJ
+    ports:
+      - '80:80'
+    networks:
+      - laravel_net
+networks:
+  laravel_net:
+    driver: bridge
