@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -28,8 +28,12 @@ RUN composer install --no-scripts --no-interaction --prefer-dist
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
+# Configure Apache
+RUN a2enmod rewrite
+COPY .docker/apache/default.conf /etc/apache2/sites-available/000-default.conf
+
 # Expose port
 EXPOSE 80
 
 # Start server
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]
