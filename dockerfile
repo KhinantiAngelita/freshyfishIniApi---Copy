@@ -8,10 +8,12 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     zip \
-    unzip
+    unzip \
+    libzip-dev \
+    libpq-dev
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -29,14 +31,17 @@ RUN composer install --no-scripts --no-interaction --prefer-dist
 RUN chown -R www-data:www-data /var/www/html
 
 # Configure Apache
-RUN echo "<VirtualHost *:80>\
-    DocumentRoot /var/www/html/public\
-    <Directory /var/www/html/public>\
-        AllowOverride All\
-    </Directory>\
-</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 RUN a2ensite 000-default.conf
+
+# Set environment variables for MySQL connection
+ENV DB_CONNECTION=mysql
+ENV DB_HOST=po8o0oggc48888gccck0go4w
+ENV DB_PORT=3306
+ENV DB_DATABASE=default
+ENV DB_USERNAME=mysql
+ENV DB_PASSWORD=gpHdRCtZZASaDoX3ySXHb0wSE0JrPij3FBOgYe5zJl2yzoTSFYvG09aKJgWI2zAJ
 
 # Expose port
 EXPOSE 80
