@@ -1,0 +1,75 @@
+[phases.setup]
+nixPkgs = ["python311Packages.supervisor"]
+
+[phases.build]
+cmds = [
+    "mkdir -p /etc/supervisor/conf.d/",
+    "cp /assets/worker-laravel.conf /etc/supervisor/conf.d/",
+    "cp /assets/supervisord.conf /etc/supervisord.conf",
+    "chmod +x /assets/start.sh"
+]
+
+[start]
+cmd = '/assets/start.sh'
+
+[staticAssets]
+"start.sh" = '''
+#!/bin/bash
+# Start supervisor
+supervisord -c /etc/supervisord.conf -n
+'''
+
+"supervisord.conf" = '''
+[unix_http_server]
+file=/assets/supervisor.sock
+
+[supervisord]
+logfile=/var/log/supervisord.log
+logfile_maxbytes=50MB
+logfile_backups=10
+loglevel=info
+pidfile=/assets/supervisord.pid
+nodaemon=false
+silent=false
+minfds=1024
+minprocs=200
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisorctl]
+serverurl=unix:///assets/supervisor.sock
+
+[include]
+files = /etc/supervisor/conf.d/*.conf
+'''
+
+"worker-laravel.conf" = '''
+[program:worker-laravel]
+process_name=%(program_name)s_%(process_num)02d
+command=php artisan serve --host=0.0.0.0 --port=${PORT}
+directory=/app
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+numprocs=1
+startsecs=0
+stopwaitsecs=3600
+stdout_logfile=/var/log/worker-laravel.log
+stderr_logfile=/var/log/worker-laravel.log
+
+[program:queue-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+directory=/app
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+numprocs=2
+startsecs=0
+stopwaitsecs=3600
+stdout_logfile=/var/log/queue-worker.log
+stderr_logfile=/var/log/queue-worker.log
+'''
