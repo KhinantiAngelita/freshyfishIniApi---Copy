@@ -1,52 +1,38 @@
-# Use the official PHP image as a base image
-FROM php:8.2-fpm
+# Use the official PHP image with Nginx as a base image
+FROM serversideup/php:8.2-fpm-nginx
+
+# Enable PHP OPcache
+ENV PHP_OPCACHE_ENABLE=1
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy existing application directory contents
-COPY . /var/www/html
+# Switch to root user to install dependencies
+USER root
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    zip \
-    unzip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd
+# Install Node.js
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-scripts --no-interaction --prefer-dist
+# Copy existing application directory contents with appropriate ownership
+COPY --chown=www-data:www-data . /var/www/html
+
+# Switch to www-data user
+USER www-data
+
+# Install Node.js dependencies and build assets
+RUN npm install
+RUN npm run build
+
+# Install Composer dependencies
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
-
-# Optimize Laravel
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
-
-# Install Nginx
-RUN apt-get update && apt-get install -y nginx
-
-# Copy Nginx configuration file
-COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
 
 # Start Nginx and PHP-FPM
 CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
-
-# Set environment variables for MySQL connection
-ENV DB_CONNECTION=mysql
-ENV DB_HOST=po8o0oggc48888gccck0go4w
-ENV DB_PORT=3306
-ENV DB_DATABASE=default
-ENV DB_USERNAME=mysql
-ENV DB_PASSWORD=MOfpJB30KYXnQHoWqpwWUV1Ung43ucwqnQIAThcuWMIHJCb3AUxCIE76J0Yp4vby
