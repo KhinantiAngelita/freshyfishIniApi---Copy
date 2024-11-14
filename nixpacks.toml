@@ -131,7 +131,7 @@ user = www-data
 group = www-data
 listen = 127.0.0.1:9000
 pm = dynamic
-pm.max_children = 10
+pm.max_children = 50
 pm.start_servers = 4
 pm.min_spare_servers = 2
 pm.max_spare_servers = 6
@@ -146,35 +146,36 @@ php_admin_value[max_execution_time] = 300
 '''
 
 "worker-nginx.conf" = '''
-[program:nginx]
-command=nginx -c /etc/nginx/nginx.conf
-autostart=true
-autorestart=true
-stdout_logfile=/var/log/nginx/access.log
-stderr_logfile=/var/log/nginx/error.log
-'''
-
-"worker-php-fpm.conf" = '''
-[program:php-fpm]
-command=php-fpm -F -y /etc/php-fpm.conf
-autostart=true
-autorestart=true
-stdout_logfile=/var/log/php-fpm/access.log
-stderr_logfile=/var/log/php-fpm/error.log
-'''
-
-"worker-laravel-queue.conf" = '''
-[program:queue-worker]
+[program:worker-nginx]
 process_name=%(program_name)s_%(process_num)02d
-command=php /app/artisan queue:work --sleep=3 --tries=3 --max-time=3600
-directory=/app
+command=nginx -c /etc/nginx.conf
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/worker-nginx.log
+stderr_logfile=/var/log/worker-nginx.log
+'''
+
+"worker-phpfpm.conf" = '''
+[program:worker-phpfpm]
+process_name=%(program_name)s_%(process_num)02d
+command=php-fpm -y /assets/php-fpm.conf -F
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/worker-phpfpm.log
+stderr_logfile=/var/log/worker-phpfpm.log
+'''
+
+"worker-laravel.conf" = '''
+[program:worker-laravel]
+process_name=%(program_name)s_%(process_num)02d
+command=bash -c 'exec php /app/artisan queue:work --sleep=3 --tries=3 --max-time=3600'
 autostart=true
 autorestart=true
 stopasgroup=true
 killasgroup=true
-numprocs=2
+numprocs=12
 startsecs=0
 stopwaitsecs=3600
-stdout_logfile=/var/log/queue-worker.log
-stderr_logfile=/var/log/queue-worker.log
+stdout_logfile=/var/log/worker-laravel.log
+stderr_logfile=/var/log/worker-laravel.log
 '''
