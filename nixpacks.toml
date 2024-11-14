@@ -36,7 +36,6 @@ logfile_backups=10
 loglevel=info
 pidfile=/assets/supervisord.pid
 nodaemon=false
-silent=false
 minfds=1024
 minprocs=200
 
@@ -56,8 +55,10 @@ worker_processes 5;
 daemon off;
 pid /var/run/nginx.pid;
 
+worker_rlimit_nofile 8192;
+
 events {
-    worker_connections 1024;
+    worker_connections 4096;
 }
 
 http {
@@ -67,12 +68,10 @@ http {
     keepalive_timeout 65;
     client_max_body_size 20M;
     
-    upstream php-fpm {
-        server 127.0.0.1:9000;
-    }
-
     server {
         listen ${PORT};
+        listen [::]:${PORT};
+        server_name localhost;
         root /app/public;
         index index.php;
         
@@ -99,7 +98,7 @@ http {
 
         location ~ \.php$ {
             fastcgi_split_path_info ^(.+\.php)(/.+)$;
-            fastcgi_pass php-fpm;
+            fastcgi_pass 127.0.0.1:9000;
             fastcgi_index index.php;
             include fastcgi_params;
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
