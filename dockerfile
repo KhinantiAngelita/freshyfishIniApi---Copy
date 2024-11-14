@@ -1,43 +1,36 @@
-# Use the official PHP image with Nginx as a base image
-FROM serversideup/php:8.2-fpm-nginx
+FROM php:8.2
 
-# Enable PHP OPcache
-ENV PHP_OPCACHE_ENABLE=1
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    git \
+    unzip \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Switch to root user to install dependencies
-USER root
+# Copy application files
+COPY . .
 
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install -y nodejs
-
-# Copy existing application directory contents with appropriate ownership
-COPY --chown=www-data:www-data . /var/www/html
-
-# Copy custom Nginx configuration files
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY fastcgi-php.conf /etc/nginx/snippets/fastcgi-php.conf
-COPY fastcgi.conf /etc/nginx/fastcgi.conf
-
-# Switch to www-data user
-USER www-data
-
-# Install Node.js dependencies and build assets
-RUN npm install
-RUN npm run build
-
-# Install Composer dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+RUN chown -R www-data:www-data \
+    /var/www/html/storage \
+    /var/www/html/bootstrap/cache
+
+# Optimize Laravel
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
 
 # Expose port 80
 EXPOSE 80
 
-# Start Nginx and PHP-FPM
-CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
+# Start Laravel server
+CMD php artisan serve --host=0.0.0.0 --port=80
