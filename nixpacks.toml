@@ -3,18 +3,13 @@ nixPkgs = ["...", "python311Packages.supervisor"]
 
 [phases.build]
 cmds = [
-    "composer install --ignore-platform-reqs",
-    "cp .env.example .env",
-    "php artisan key:generate",
     "mkdir -p /etc/supervisor/conf.d/",
-    "mkdir -p /var/log/nginx",
-    "mkdir -p /var/log/php-fpm",
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
-    "cp /assets/nginx.conf /etc/nginx/nginx.conf",
-    "cp /assets/php-fpm.conf /etc/php-fpm.conf",
-    "chmod +x /assets/start.sh"
+    "chmod +x /assets/start.sh",
+    "..."
 ]
+
 
 [start]
 cmd = '/assets/start.sh'
@@ -22,6 +17,10 @@ cmd = '/assets/start.sh'
 [staticAssets]
 "start.sh" = '''
 #!/bin/bash
+
+# Transform the nginx configuration
+node /assets/scripts/prestart.mjs /assets/nginx.conf /etc/nginx.conf
+
 # Start supervisor
 supervisord -c /etc/supervisord.conf -n
 '''
@@ -57,7 +56,7 @@ daemon off;
 pid /var/run/nginx.pid;
 
 events {
-    worker_connections 1024;
+    worker_connections 4096;
 }
 
 http {
@@ -128,8 +127,8 @@ pid = /var/run/php-fpm.pid
 error_log = /var/log/php-fpm/error.log
 
 [www]
-user = nobody
-group = nobody
+user = www-data
+group = www-data
 listen = 127.0.0.1:9000
 pm = dynamic
 pm.max_children = 10
