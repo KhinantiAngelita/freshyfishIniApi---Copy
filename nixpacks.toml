@@ -10,7 +10,6 @@ cmds = [
     "..."
 ]
 
-
 [start]
 cmd = '/assets/start.sh'
 
@@ -36,6 +35,7 @@ logfile_backups=10
 loglevel=info
 pidfile=/assets/supervisord.pid
 nodaemon=false
+silent=false
 minfds=1024
 minprocs=200
 
@@ -47,93 +47,6 @@ serverurl=unix:///assets/supervisor.sock
 
 [include]
 files = /etc/supervisor/conf.d/*.conf
-'''
-
-"nginx.template.conf" = '''
-user www-data www-data;
-worker_processes 5;
-daemon off;
-pid /var/run/nginx.pid;
-
-worker_rlimit_nofile 8192;
-
-events {
-    worker_connections 4096;
-}
-
-http {
-    include mime.types;
-    default_type application/octet-stream;
-    sendfile on;
-    keepalive_timeout 65;
-    client_max_body_size 20M;
-    
-    server {
-        listen ${PORT};
-        listen [::]:${PORT};
-        server_name localhost;
-        root /app/public;
-        index index.php;
-        
-        # API specific headers
-        add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
-        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
-        
-        # Handle preflight requests
-        if ($request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' '*';
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
-            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain; charset=utf-8';
-            add_header 'Content-Length' 0;
-            return 204;
-        }
-
-        location / {
-            try_files $uri $uri/ /index.php?$query_string;
-        }
-
-        location ~ \.php$ {
-            fastcgi_split_path_info ^(.+\.php)(/.+)$;
-            fastcgi_pass 127.0.0.1:9000;
-            fastcgi_index index.php;
-            include fastcgi_params;
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            fastcgi_param PATH_INFO $fastcgi_path_info;
-            fastcgi_read_timeout 300;
-            # Add content-length for proper transfer
-            fastcgi_param CONTENT_LENGTH $content_length;
-        }
-
-        # Deny access to .htaccess files
-        location ~ /\.ht {
-            deny all;
-        }
-        
-        # Deny access to git & version control
-        location ~ /\.(?!well-known).* {
-            deny all;
-        }
-    }
-}
-'''
-
-"php-fpm.conf" = '''
-[www]
-listen = 127.0.0.1:9000
-user = www-data
-group = www-data
-listen.owner = www-data
-listen.group = www-data
-pm = dynamic
-pm.max_children = 50
-pm.min_spare_servers = 4
-pm.max_spare_servers = 32
-pm.start_servers = 18
-clear_env = no
 '''
 
 "worker-nginx.conf" = '''
@@ -169,4 +82,98 @@ startsecs=0
 stopwaitsecs=3600
 stdout_logfile=/var/log/worker-laravel.log
 stderr_logfile=/var/log/worker-laravel.log
+'''
+
+"php-fpm.conf" = '''
+[www]
+listen = 127.0.0.1:9000
+user = www-data
+group = www-data
+listen.owner = www-data
+listen.group = www-data
+pm = dynamic
+pm.max_children = 50
+pm.min_spare_servers = 4
+pm.max_spare_servers = 32
+pm.start_servers = 18
+clear_env = no
+'''
+
+"nginx.template.conf" = '''
+user www-data www-data;
+worker_processes 5;
+daemon off;
+
+worker_rlimit_nofile 8192;
+
+events {
+  worker_connections  4096;  # Default: 1024
+}
+
+http {
+    include    $!{nginx}/conf/mime.types;
+    index    index.html index.htm index.php;
+
+    default_type application/octet-stream;
+    log_format   main '$remote_addr - $remote_user [$time_local]  $status '
+        '"$request" $body_bytes_sent "$http_referer" '
+        '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log /var/log/nginx-access.log;
+    error_log /var/log/nginx-error.log;
+    sendfile     on;
+    tcp_nopush   on;
+    server_names_hash_bucket_size 128; # this seems to be required for some vhosts
+
+    server {
+        listen ${PORT};
+        listen [::]:${PORT};
+        server_name localhost;
+
+        $if(NIXPACKS_PHP_ROOT_DIR) (
+            root ${NIXPACKS_PHP_ROOT_DIR};
+        ) else (
+            root /app;
+        )
+
+        add_header X-Content-Type-Options "nosniff";
+
+        client_max_body_size 35M;
+
+        index index.php;
+
+        charset utf-8;
+
+        $if(IS_LARAVEL) (
+            location / {
+                try_files $uri $uri/ /index.php?$query_string;
+            }
+        ) else ()
+
+        $if(NIXPACKS_PHP_FALLBACK_PATH) (
+          location / {
+            try_files $uri $uri/ ${NIXPACKS_PHP_FALLBACK_PATH}?$query_string;
+          }
+        ) else ()
+
+        location = /favicon.ico { access_log off; log_not_found off; }
+        location = /robots.txt  { access_log off; log_not_found off; }
+
+        $if(IS_LARAVEL) (
+            error_page 404 /index.php;
+        ) else ()
+
+        location ~ \.php$ {
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+            include $!{nginx}/conf/fastcgi_params;
+            include $!{nginx}/conf/fastcgi.conf;
+
+            fastcgi_param PHP_VALUE "upload_max_filesize=30M \n post_max_size=35M";
+        }
+
+        location ~ /\.(?!well-known).* {
+            deny all;
+        }
+    }
+}
 '''
