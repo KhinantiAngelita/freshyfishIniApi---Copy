@@ -122,10 +122,6 @@ http {
 '''
 
 "php-fpm.conf" = '''
-[global]
-pid = /var/run/php-fpm.pid
-error_log = /var/log/php-fpm/error.log
-
 [www]
 listen = 127.0.0.1:9000
 user = www-data
@@ -134,14 +130,10 @@ listen.owner = www-data
 listen.group = www-data
 pm = dynamic
 pm.max_children = 50
-pm.start_servers = 18
 pm.min_spare_servers = 4
 pm.max_spare_servers = 32
+pm.start_servers = 18
 clear_env = no
-
-php_admin_value[upload_max_filesize] = 20M
-php_admin_value[post_max_size] = 20M
-php_admin_value[memory_limit] = 256M
 '''
 
 "worker-nginx.conf" = '''
