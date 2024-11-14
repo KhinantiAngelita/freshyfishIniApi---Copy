@@ -17,6 +17,9 @@ RUN apt-get install -y nodejs
 # Copy existing application directory contents with appropriate ownership
 COPY --chown=www-data:www-data . /var/www/html
 
+# Copy custom Nginx configuration file
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # Switch to www-data user
 USER www-data
 
