@@ -20,6 +20,9 @@ COPY --chown=www-data:www-data . /var/www/html
 # Copy custom Nginx configuration file
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Copy custom fastcgi-php.conf file
+COPY fastcgi-php.conf /etc/nginx/snippets/fastcgi-php.conf
+
 # Switch to www-data user
 USER www-data
 
