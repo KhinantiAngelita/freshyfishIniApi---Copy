@@ -24,6 +24,12 @@ RUN chown -R www-data:www-data \
     /var/www/html/storage \
     /var/www/html/bootstrap/cache
 
+# Copy the environment file
+COPY .env.sample .env
+
+# Generate application key
+RUN php artisan key:generate
+
 # Optimize Laravel
 RUN php artisan config:cache && \
     php artisan route:cache && \
