@@ -14,7 +14,7 @@ class TokoController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->ID_role == 'penjual') {
+        if ($user->ID_role == 2) {
             return response()->json(['message' => 'Anda sudah memiliki toko']);
         }
 
