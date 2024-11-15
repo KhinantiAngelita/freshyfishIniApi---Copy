@@ -31,7 +31,7 @@ class TokoController extends Controller
         ]);
 
         $user->ID_toko = $toko->ID_toko;
-        $user->ID_role = 2;
+        $user->ID_role = 'penjual';
         $user->save();
 
         return response()->json($toko, 201);
