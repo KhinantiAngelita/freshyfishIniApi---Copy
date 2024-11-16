@@ -32,7 +32,7 @@ Route::post('/nambahtoko', [TokoController::class, 'store'])->middleware('auth:s
 //PRODUK
 Route::get('/produk', [ProdukController::class, 'index'])->middleware('auth:sanctum');
 Route::post('/produk', [ProdukController::class, 'store'])->middleware('auth:sanctum');
-Route::put('/produk/{id}', [ProdukController::class, 'update'])->middleware('auth:sanctum');
+Route::post('/produk/{id}', [ProdukController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/produk/{id}', [ProdukController::class, 'delete'])->middleware('auth:sanctum');
 
 
