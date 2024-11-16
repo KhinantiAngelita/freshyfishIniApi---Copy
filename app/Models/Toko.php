@@ -14,7 +14,7 @@ class Toko extends Model
 
     // Tentukan nama tabel (opsional, jika Anda menggunakan nama tabel yang berbeda)
     protected $table = 'tokos';
-    
-    protected $fillable = ['store_name', 'store_address', 'product_category'];
+
+    protected $fillable = ['store_name', 'store_address', 'description_store'];
 
 }

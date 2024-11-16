@@ -9,6 +9,8 @@ class Cart extends Model
 {
     use HasFactory;
 
+    protected $table = 'carts';
+
     protected $primaryKey = 'ID_keranjang';
 
     protected $fillable = [
@@ -27,5 +29,10 @@ class Cart extends Model
     public function produk()
     {
         return $this->belongsTo(Produk::class, 'ID_produk');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(DetailKeranjang::class, 'ID_keranjang', 'ID_keranjang');
     }
 }

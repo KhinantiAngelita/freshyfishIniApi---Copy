@@ -36,7 +36,7 @@ class ProdukSeeder extends Seeder
             'fish_photo' => 'path/to/bandeng.jpg',
             'fish_description' => 'Ikan payau berkualitas',
             'habitat' => 'Air Payau',
-            'ID_toko' => 3
+            'ID_toko' => 6
         ]);
     }
 }

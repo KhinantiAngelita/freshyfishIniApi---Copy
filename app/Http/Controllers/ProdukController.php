@@ -47,6 +47,16 @@ class ProdukController extends Controller
     public function update(Request $request, $id)
     {
         $produk = Produk::find($id);
+
+        if (!$produk) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        $user = Auth::user();
+        if ($produk->ID_toko != $user->ID_toko) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengedit produk ini'], 403);
+        }
+
         $validatedData = $request->validate([
             'fish_type' => 'string',
             'fish_price' => 'numeric',
@@ -57,6 +67,7 @@ class ProdukController extends Controller
         ]);
 
         $produk->update($validatedData);
+
         return response()->json($produk);
     }
 
@@ -64,6 +75,16 @@ class ProdukController extends Controller
     public function delete($id)
     {
         $produk = Produk::find($id);
+
+        if (!$produk) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        $user = Auth::user();
+        if ($produk->ID_toko != $user->ID_toko) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengedit produk ini'], 403);
+        }
+
         $produk->delete();
         return response()->json(['message' => 'Produk berhasil dihapus']);
     }

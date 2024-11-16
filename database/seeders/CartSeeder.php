@@ -20,5 +20,11 @@ class CartSeeder extends Seeder
             'ID_user' => 2,
             'ID_produk' => 2
         ]);
+
+        Cart::create([
+            'order_quantity' => 5,
+            'ID_user' => 2,
+            'ID_produk' => 2
+        ]);
     }
 }

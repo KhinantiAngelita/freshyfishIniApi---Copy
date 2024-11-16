@@ -29,12 +29,12 @@ class PesananSeeder extends Seeder
         // Buat data pesanan dengan relasi yang sudah ada
         Pesanan::create([
             'ID_user' => $user->ID_user,  // Ambil ID_user dari user yang pertama
-            'ID_produk' => $produk->ID_produk,  // Ambil ID_produk dari produk yang pertama
+            //'ID_produk' => $produk->ID_produk,  // Ambil ID_produk dari produk yang pertama
             'order_quantity' => 2,  // Jumlah produk yang dipesan
             'total_price' => $produk->fish_price * 2,  // Total harga (harga per item dikali jumlah)
             'order_date' => Carbon::now(),  // Waktu saat pesanan dibuat
             'status' => 'pending',  // Status pesanan
-            'ID_toko' => $toko->ID_toko,  // Ambil ID_toko dari toko yang pertama
+            //'ID_toko' => $toko->ID_toko,  // Ambil ID_toko dari toko yang pertama
             'ID_keranjang' => $keranjang->ID_keranjang,  // Ambil ID_keranjang dari keranjang yang pertama
             'payment_method' => 'credit_card',  // Metode pembayaran (bisa disesuaikan)
         ]);

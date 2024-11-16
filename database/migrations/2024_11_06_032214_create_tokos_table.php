@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id('ID_toko');
         $table->string('store_name');
         $table->string('store_address');
-        $table->string('product_category');
+        $table->string('description_store');
         $table->timestamps();
     });
 }
