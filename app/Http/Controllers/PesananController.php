@@ -153,7 +153,7 @@ public function getPesananFromCart()
     });
 
     // Menghasilkan nomor virtual account secara acak
-    $virtualAccount = 'VA' . Str::random(10); // Nomor virtual account, dapat disesuaikan
+    $virtualAccount = 'VA' . rand(1000000000000000, 9999999999999999); // Nomor virtual account, dapat disesuaikan
 
     // Menyimpan pesanan baru
     $pesanan = Pesanan::create([
