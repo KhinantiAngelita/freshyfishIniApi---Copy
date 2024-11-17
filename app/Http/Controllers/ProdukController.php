@@ -126,4 +126,20 @@ class ProdukController extends Controller
         $produk->delete();
         return response()->json(['message' => 'Produk berhasil dihapus']);
     }
+    
+    public function getProdukById($id)
+    {
+        // Cari produk berdasarkan ID
+        $produk = Produk::find($id);
+
+        // Jika produk tidak ditemukan, kembalikan respon error
+        if (!$produk) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        // Kembalikan data produk dalam format JSON
+        return response()->json($produk, 200);
+    }
+
+
 }

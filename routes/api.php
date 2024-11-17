@@ -33,6 +33,7 @@ Route::delete('/toko/delete/{id}', [TokoController::class, 'closeStore'])->middl
 //PRODUK
 Route::get('/produk', [ProdukController::class, 'GetAllProduk'])->middleware('auth:sanctum');
 Route::get('/produksaya', [ProdukController::class, 'index'])->middleware('auth:sanctum');
+Route::get('/produk/{id}', [ProdukController::class, 'getProdukById'])->middleware('auth:sanctum');
 Route::post('/produk', [ProdukController::class, 'store'])->middleware('auth:sanctum');
 Route::post('/produk/{id}', [ProdukController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/produk/{id}', [ProdukController::class, 'delete'])->middleware('auth:sanctum');
