@@ -50,12 +50,12 @@ Route::put('/updatekuantitas/{id}', [CartController::class, 'updateQuantity'])->
 
 //DETAIL KERANJANG
 Route::get('detail-keranjang', [DetailKeranjangController::class, 'index'])->middleware('auth:sanctum');
-Route::get('detail-keranjang/{id}', [DetailKeranjangController::class, 'show'])->middleware('auth:sanctum');
+// Route::get('detail-keranjang/{id}', [DetailKeranjangController::class, 'show'])->middleware('auth:sanctum');
 Route::post('detail-keranjang', [DetailKeranjangController::class, 'store'])->middleware('auth:sanctum');
 Route::put('detail-keranjang/{id}', [DetailKeranjangController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('detail-keranjang/{id}', [DetailKeranjangController::class, 'destroy'])->middleware('auth:sanctum');
 Route::get('/users/{userId}/cart-details', [DetailKeranjangController::class, 'getUserCartDetails'])->middleware('auth:sanctum');
-Route::get('/detailkeranjangdariuser/{ID_user}', [DetailKeranjangController::class, 'showDetailsByUser'])->middleware('auth:sanctum');
+Route::get('/detail-keranjang/{ID_user}', [DetailKeranjangController::class, 'showDetailsByUser'])->middleware('auth:sanctum');
 
 //PESANAN
 Route::get('/pesanan', [PesananController::class, 'index'])->middleware('auth:sanctum');

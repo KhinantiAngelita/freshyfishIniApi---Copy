@@ -38,6 +38,30 @@ class TokoController extends Controller
         return response()->json($toko, 201);
     }
 
+    public function closeStore($id)
+    {
+        $user = Auth::user();
+
+         if ($user->ID_toko != $id) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk menghapus toko ini'], 403);
+        }
+
+    $toko = Toko::find($id);
+
+    if (!$toko) {
+        return response()->json(['message' => 'Toko tidak ditemukan'], 404);
+    }
+
+    $user->ID_role = 1;
+    $user->ID_toko = null; // Hapus ID toko dari user
+    $user->save();
+
+    $toko->delete();
+
+    return response()->json(['message' => 'Toko berhasil dihapus dan Anda kembali menjadi pembeli'], 200);
+    }
+
+
     // Menampilkan detail toko
     public function show($id)
     {
@@ -123,28 +147,6 @@ class TokoController extends Controller
         ], 201);
     }
 
-    public function closeStore($id)
-    {
-        $user = Auth::user();
-
-         if ($user->ID_toko != $id) {
-            return response()->json(['message' => 'Anda tidak memiliki akses untuk menghapus toko ini'], 403);
-        }
-
-    $toko = Toko::find($id);
-
-    if (!$toko) {
-        return response()->json(['message' => 'Toko tidak ditemukan'], 404);
-    }
-
-    $user->ID_role = 1;
-    $user->ID_toko = null; // Hapus ID toko dari user
-    $user->save();
-
-    $toko->delete();
-
-    return response()->json(['message' => 'Toko berhasil dihapus dan Anda kembali menjadi pembeli'], 200);
-}
 
 
 }
