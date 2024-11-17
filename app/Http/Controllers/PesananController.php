@@ -206,6 +206,13 @@ public function checkout(Request $request)
     foreach ($cartItems as $cartItem) {
         $product = $cartItem->produk; // Ambil produk dari relasi keranjang
         $totalPrice += $cartItem->order_quantity * $product->fish_price; // Hitung harga total
+
+        // Cek apakah stok ikan cukup
+        if ($product->fish_weight < $cartItem->order_quantity) {
+            return response()->json([
+                'message' => 'Stok ikan tidak cukup untuk produk ' . $product->fish_type
+            ], 400);
+        }
     }
 
     // Generate nomor virtual account secara acak
@@ -221,13 +228,21 @@ public function checkout(Request $request)
         'virtual_account' => $virtualAccount, // Nomor virtual account
     ]);
 
-    // Kaitkan produk yang dibeli dengan pesanan
-    foreach ($cartItems as $cartItem) {
-        $pesanan->produk()->attach($cartItem->ID_produk, [
-            'quantity' => $cartItem->order_quantity,
-            'price_per_item' => $cartItem->produk->fish_price
-        ]);
-    }
+// Kaitkan produk yang dibeli dengan pesanan dan kurangi stok ikan
+foreach ($cartItems as $cartItem) {
+    // Ambil produk dari keranjang
+    $product = $cartItem->produk;
+
+    // Kurangi stok ikan berdasarkan kuantitas yang dipesan
+    $product->fish_weight -= $cartItem->order_quantity;
+    $product->save();
+
+    // Kaitkan produk dengan pesanan
+    $pesanan->produk()->attach($cartItem->ID_produk, [
+        'quantity' => $cartItem->order_quantity,
+        'price_per_item' => $product->fish_price
+    ]);
+}
 
     // Hapus barang di keranjang setelah checkout
     Cart::where('ID_user', $user->ID_user)->delete();
@@ -239,6 +254,38 @@ public function checkout(Request $request)
         'virtual_account' => $virtualAccount, // Nomor virtual account
     ], 201);
 }
+
+public function markAndShowOrderHistory($ID_user)
+{
+    // Mengambil semua pesanan dengan ID_user tertentu yang masih berstatus 'pending'
+    $orders = Pesanan::where('ID_user', $ID_user)->where('status', 'pending')->get();
+
+    // Cek apakah ada pesanan yang berstatus 'pending'
+    if ($orders->isEmpty()) {
+        return response()->json(['message' => 'Tidak ada pesanan yang berstatus pending'], 404);
+    }
+
+    // Perbarui status menjadi 'complete' untuk setiap pesanan yang berstatus 'pending'
+    foreach ($orders as $order) {
+        $order->status = 'complete';
+        $order->save();
+    }
+
+    // Mengambil semua histori pesanan dengan status 'complete' untuk ID_user tersebut
+    $completedOrders = Pesanan::where('ID_user', $ID_user)->where('status', 'complete')->get();
+
+    // Cek jika tidak ada histori pesanan dengan status 'complete'
+    if ($completedOrders->isEmpty()) {
+        return response()->json(['message' => 'Tidak ada histori pesanan yang ditemukan'], 404);
+    }
+
+    // Mengembalikan data histori pesanan
+    return response()->json([
+        'ID_user' => $ID_user,
+        'order_history' => $completedOrders
+    ]);
+}
+
 
 
 }

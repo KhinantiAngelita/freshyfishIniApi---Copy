@@ -64,6 +64,7 @@ Route::post('/membuatpesanan', [PesananController::class, 'membuatPesanan'])->mi
 Route::post('/pesanan/create', [PesananController::class, 'createOrder'])->middleware('auth:sanctum');
 Route::post('/pesanan/makeOrder', [PesananController::class, 'getPesananFromCart'])->middleware('auth:sanctum');
 Route::post('/pesanan/buatpesanan', [PesananController::class, 'checkout'])->middleware('auth:sanctum');
+Route::get('/pesanan/histori/{id}', [PesananController::class, 'markAndShowOrderHistory'])->middleware('auth:sanctum');
 
 
 //ROLES
