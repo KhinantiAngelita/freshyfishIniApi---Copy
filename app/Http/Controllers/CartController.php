@@ -180,5 +180,40 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Kuantitas produk berhasil diupdate']);
     }
+
+    public function decreaseQuantity(Request $request)
+    {
+        $user = Auth::user();
+
+        // Validasi data input
+        $request->validate([
+            'ID_produk' => 'required|exists:produk,ID_produk',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        // Mencari produk di keranjang
+        $cartItem = Cart::where('ID_user', $user->ID_user)
+                        ->where('ID_produk', $request->ID_produk)
+                        ->first();
+
+        if (!$cartItem) {
+            return response()->json(['message' => 'Produk tidak ditemukan di keranjang'], 404);
+        }
+
+        // Kurangi kuantitas
+        if ($cartItem->order_quantity > $request->quantity) {
+            $cartItem->order_quantity -= $request->quantity;
+            $cartItem->save();
+
+            return response()->json(['message' => 'Kuantitas berhasil dikurangi', 'cart_item' => $cartItem]);
+        } else {
+            // Hapus item jika kuantitas menjadi nol atau kurang
+            $cartItem->delete();
+
+            return response()->json(['message' => 'Produk dihapus dari keranjang karena kuantitas habis']);
+        }
+    }
+
+
 }
 
