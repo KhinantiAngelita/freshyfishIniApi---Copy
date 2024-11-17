@@ -27,6 +27,7 @@ Route::get('/toko/{id}', [TokoController::class, 'show'])->middleware('auth:sanc
 Route::put('/toko/{id}', [TokoController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/toko/{id}', [TokoController::class, 'delete'])->middleware('auth:sanctum');
 Route::post('/nambahtoko', [TokoController::class, 'store'])->middleware('auth:sanctum');
+Route::delete('/toko/delete/{id}', [TokoController::class, 'closeStore'])->middleware('auth:sanctum');
 
 
 //PRODUK

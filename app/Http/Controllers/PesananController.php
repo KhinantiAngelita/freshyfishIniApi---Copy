@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PesananController extends Controller
 {
+    //belum dipakai
     // Menampilkan pesanan untuk toko user yang login
     public function index()
     {
@@ -20,6 +21,7 @@ class PesananController extends Controller
         return response()->json($pesanan);
     }
 
+    // ga jadi dipake,
     // Membuat pesanan baru
     public function store(Request $request)
     {
