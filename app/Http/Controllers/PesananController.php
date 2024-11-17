@@ -119,7 +119,7 @@ class PesananController extends Controller
             'order_date' => now(),
             'status' => 'pending', // Status bisa disesuaikan
             'ID_user' => $request->ID_user,
-            'ID_keranjang' => $request->ID_keranjang,
+            'ID_keranjang' => $cartItems->first()->ID_keranjang,     // 'ID_keranjang' => $request->ID_keranjang,
             'payment_method' => $request->payment_method,
         ]);
 
@@ -186,5 +186,57 @@ public function getPesananFromCart()
         'virtual_account' => $virtualAccount, // Menampilkan nomor virtual account
     ], 201);
 }
+
+public function checkout(Request $request)
+{
+    $user = Auth::user();
+
+    // Ambil semua keranjang milik user yang sedang login
+    $cartItems = Cart::where('ID_user', $user->ID_user)->get();
+
+    // Pastikan ada barang di keranjang
+    if ($cartItems->isEmpty()) {
+        return response()->json(['message' => 'Keranjang kosong'], 400);
+    }
+
+    // Hitung total harga
+    $totalPrice = 0;
+    foreach ($cartItems as $cartItem) {
+        $product = $cartItem->produk; // Ambil produk dari relasi keranjang
+        $totalPrice += $cartItem->order_quantity * $product->fish_price; // Hitung harga total
+    }
+
+    // Generate nomor virtual account secara acak
+    $virtualAccount = 'VA' . rand(1000000000000000, 9999999999999999);
+
+    // Buat pesanan baru
+    $pesanan = Pesanan::create([
+        'ID_user' => $user->ID_user,
+        'total_price' => $totalPrice,
+        'order_date' => now(),
+        'status' => 'pending',  // Status pesanan bisa disesuaikan
+        'payment_method' => $request->payment_method, // Misal: transfer, e-wallet, dll
+        'virtual_account' => $virtualAccount, // Nomor virtual account
+    ]);
+
+    // Kaitkan produk yang dibeli dengan pesanan
+    foreach ($cartItems as $cartItem) {
+        $pesanan->produk()->attach($cartItem->ID_produk, [
+            'quantity' => $cartItem->order_quantity,
+            'price_per_item' => $cartItem->produk->fish_price
+        ]);
+    }
+
+    // Hapus barang di keranjang setelah checkout
+    Cart::where('ID_user', $user->ID_user)->delete();
+
+    // Kembalikan response sukses dengan data pesanan dan nomor virtual account
+    return response()->json([
+        'message' => 'Pesanan berhasil dibuat',
+        'pesanan' => $pesanan,
+        'virtual_account' => $virtualAccount, // Nomor virtual account
+    ], 201);
+}
+
 
 }

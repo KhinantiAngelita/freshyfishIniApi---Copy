@@ -12,7 +12,7 @@ class Pesanan extends Model
     protected $table = 'pesanans';
     protected $primaryKey = 'ID_pesanan';
 
-    protected $fillable = ['order_quantity', 'total_price', 'order_date', 'status', 'ID_user','ID_keranjang', 'payment_method'];
+    protected $fillable = ['total_price', 'order_date', 'status', 'ID_user', 'payment_method', 'virtual_account'];
 
     public function user()
     {
@@ -23,4 +23,11 @@ class Pesanan extends Model
     {
         return $this->belongsTo(Cart::class, 'ID_keranjang');
     }
+
+    public function produk()
+{
+    return $this->belongsToMany(Produk::class, 'pesanan_produk', 'ID_pesanan', 'ID_produk')
+                ->withPivot('quantity', 'price_per_item');
+}
+
 }

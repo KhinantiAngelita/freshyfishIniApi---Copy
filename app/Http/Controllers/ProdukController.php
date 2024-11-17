@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Auth;
 class ProdukController extends Controller
 {
     // Menampilkan daftar produk toko tertentu
+    public function GetAllProduk()
+    {
+        return response()->json(Produk::all());
+    }
+
     public function index()
     {
         $user = Auth::user();

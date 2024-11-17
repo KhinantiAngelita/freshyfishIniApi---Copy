@@ -30,7 +30,8 @@ Route::post('/nambahtoko', [TokoController::class, 'store'])->middleware('auth:s
 
 
 //PRODUK
-Route::get('/produk', [ProdukController::class, 'index'])->middleware('auth:sanctum');
+Route::get('/produk', [ProdukController::class, 'GetAllProduk'])->middleware('auth:sanctum');
+Route::get('/produksaya', [ProdukController::class, 'index'])->middleware('auth:sanctum');
 Route::post('/produk', [ProdukController::class, 'store'])->middleware('auth:sanctum');
 Route::post('/produk/{id}', [ProdukController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/produk/{id}', [ProdukController::class, 'delete'])->middleware('auth:sanctum');
@@ -60,6 +61,7 @@ Route::post('/pesanan', [PesananController::class, 'store'])->middleware('auth:s
 Route::post('/membuatpesanan', [PesananController::class, 'membuatPesanan'])->middleware('auth:sanctum');
 Route::post('/pesanan/create', [PesananController::class, 'createOrder'])->middleware('auth:sanctum');
 Route::post('/pesanan/makeOrder', [PesananController::class, 'getPesananFromCart'])->middleware('auth:sanctum');
+Route::post('/pesanan/buatpesanan', [PesananController::class, 'checkout'])->middleware('auth:sanctum');
 
 
 //ROLES

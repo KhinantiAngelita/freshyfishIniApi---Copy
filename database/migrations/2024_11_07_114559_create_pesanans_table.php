@@ -18,8 +18,9 @@ return new class extends Migration
             $table->dateTime('order_date');
             $table->string('status');
             $table->unsignedBigInteger('ID_user');
-            $table->unsignedBigInteger('ID_keranjang');
+            $table->unsignedBigInteger('ID_keranjang')->nullable();
             $table->string('payment_method');
+            $table->string('virtual_account')->nullable();
             $table->timestamps();
 
             // Foreign keys

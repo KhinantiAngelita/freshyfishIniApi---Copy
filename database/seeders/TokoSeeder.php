@@ -26,5 +26,23 @@ class TokoSeeder extends Seeder
             'store_address' => 'Jl. Payau Sejahtera No.7',
             'description_store' => 'Ikan Payau'
         ]);
+
+        Toko::create([
+            'store_name' => 'Toko Ikan Ori',
+            'store_address' => 'Jl. Laut No.1',
+            'product_category' => 'Ikan Laut'
+        ]);
+
+        Toko::create([
+            'store_name' => 'Toko Ikan Wah',
+            'store_address' => 'Jl. Danau Indah No.3',
+            'product_category' => 'Ikan Tawar'
+        ]);
+
+        Toko::create([
+            'store_name' => 'Toko Ikan Payau',
+            'store_address' => 'Jl. Payau Sejahtera No.7',
+            'product_category' => 'Ikan Payau'
+        ]);
     }
 }
