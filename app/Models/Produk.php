@@ -36,4 +36,6 @@ class Produk extends Model
                 ->withPivot('quantity', 'price_per_item');
 }
 
+
+
 }
