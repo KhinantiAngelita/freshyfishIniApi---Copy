@@ -15,6 +15,7 @@ class ProdukController extends Controller
         return response()->json(Produk::all());
     }
 
+    // Menampilkan daftar produk toko tertentu
     public function index()
     {
         $user = Auth::user();
@@ -22,11 +23,11 @@ class ProdukController extends Controller
         return response()->json($produk);
     }
 
+    // Membuat Produk Baru
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        // Validasi data input
         $validatedData = $request->validate([
             'fish_type' => 'required|string',
             'fish_price' => 'required|numeric',
@@ -41,7 +42,6 @@ class ProdukController extends Controller
         $photoName = time() . '.' . $fishPhoto->getClientOriginalExtension(); // Membuat nama file unik
         $fishPhoto->storeAs('public/fish_photos', $photoName); // Menyimpan file gambar di folder 'public/fish_photos'
 
-        // Membuat produk baru
         $produk = Produk::create([
             'fish_type' => $validatedData['fish_type'],
             'fish_price' => $validatedData['fish_price'],
@@ -69,7 +69,6 @@ class ProdukController extends Controller
             return response()->json(['message' => 'Anda tidak memiliki akses untuk mengedit produk ini'], 403);
         }
 
-        // Validate the request data
         $validatedData = $request->validate([
             'fish_type' => 'sometimes|string',
             'fish_price' => 'sometimes|numeric',
@@ -126,20 +125,16 @@ class ProdukController extends Controller
         $produk->delete();
         return response()->json(['message' => 'Produk berhasil dihapus']);
     }
-    
+
     public function getProdukById($id)
     {
-        // Cari produk berdasarkan ID
         $produk = Produk::find($id);
 
-        // Jika produk tidak ditemukan, kembalikan respon error
         if (!$produk) {
             return response()->json(['message' => 'Produk tidak ditemukan'], 404);
         }
 
-        // Kembalikan data produk dalam format JSON
         return response()->json($produk, 200);
     }
-
 
 }

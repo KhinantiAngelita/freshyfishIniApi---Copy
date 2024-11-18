@@ -38,6 +38,7 @@ class TokoController extends Controller
         return response()->json($toko, 201);
     }
 
+    //menutup toko untuk user
     public function closeStore($id)
     {
         $user = Auth::user();
@@ -72,7 +73,6 @@ class TokoController extends Controller
     // Update detail toko
     public function update(Request $request, $id)
     {
-        // Validasi data yang diterima
         $request->validate([
             'store_name' => 'required|string|max:255',
             'store_address' => 'required|string|max:255',
@@ -82,13 +82,11 @@ class TokoController extends Controller
          // Menambahkan log untuk melihat data yang diterima
         Log::info('Request data:', $request->all()); // Log request data yang diterima dari client
 
-        // Cari toko berdasarkan ID
         $toko = Toko::find($id);
 
         // Menambahkan log untuk melihat data toko yang ditemukan
         Log::info('Toko data before update:', $toko->toArray()); // Log data toko sebelum update
 
-        // Periksa jika toko tidak ditemukan
         if (!$toko) {
             return response()->json(['message' => 'Toko tidak ditemukan'], 404);
         }
@@ -101,7 +99,6 @@ class TokoController extends Controller
         // Menambahkan log untuk melihat data yang akan disimpan
         Log::info('Toko data after update:', $toko->toArray()); // Log data toko setelah update
 
-        // Simpan perubahan ke database
         $toko->save();
 
         return response()->json([
@@ -111,42 +108,40 @@ class TokoController extends Controller
     }
 
 
-    // Hapus toko
-    public function delete($id)
-    {
-        $toko = Toko::find($id);
-        $toko->delete();
-        return response()->json(['message' => 'Toko deleted successfully']);
-    }
+    // // Hapus toko
+    // public function delete($id)
+    // {
+    //     $toko = Toko::find($id);
+    //     $toko->delete();
+    //     return response()->json(['message' => 'Toko deleted successfully']);
+    // }
 
-    public function store(Request $request)
-    {
-        // Validasi input toko
-        $validatedData = $request->validate([
-            'store_name' => 'required|string|max:255',
-            'store_address' => 'required|string',
-            'description_store' => 'required|string',
-    ]);
+    // public function store(Request $request)
+    // {
+    //     // Validasi input toko
+    //     $validatedData = $request->validate([
+    //         'store_name' => 'required|string|max:255',
+    //         'store_address' => 'required|string',
+    //         'description_store' => 'required|string',
+    // ]);
 
-        // Membuat toko baru
-        $toko = Toko::create([
-            'store_name' => $validatedData['store_name'],
-            'store_address' => $validatedData['store_address'],
-            'description_store' => $validatedData['description_store'],
-        ]);
+    //     // Membuat toko baru
+    //     $toko = Toko::create([
+    //         'store_name' => $validatedData['store_name'],
+    //         'store_address' => $validatedData['store_address'],
+    //         'description_store' => $validatedData['description_store'],
+    //     ]);
 
-        // Menghubungkan toko dengan user yang sedang login
-        $user = auth()->user(); // Mendapatkan user yang sedang login
-        $user->ID_toko = $toko->ID_toko; // Menambahkan ID_toko ke user
-        $user->save(); // Menyimpan perubahan
+    //     // Menghubungkan toko dengan user yang sedang login
+    //     $user = auth()->user(); // Mendapatkan user yang sedang login
+    //     $user->ID_toko = $toko->ID_toko; // Menambahkan ID_toko ke user
+    //     $user->save(); // Menyimpan perubahan
 
-        // Mengembalikan response
-        return response()->json([
-            'message' => 'Toko berhasil dibuat dan dihubungkan dengan user',
-            'toko' => $toko
-        ], 201);
-    }
-
-
+    //     // Mengembalikan response
+    //     return response()->json([
+    //         'message' => 'Toko berhasil dibuat dan dihubungkan dengan user',
+    //         'toko' => $toko
+    //     ], 201);
+    // }
 
 }
