@@ -16,7 +16,6 @@ class CartController extends Controller
     {
         $user = Auth::user();
 
-        // Validasi data input
         $request->validate([
             'ID_produk' => 'required|exists:produk,ID_produk',
             'order_quantity' => 'required|integer|min:1'
@@ -49,7 +48,6 @@ class CartController extends Controller
     {
         $user = Auth::user();
 
-        // Mendapatkan semua item di keranjang untuk pengguna
         $cartItems = Cart::with('produk')->where('ID_user', $user->ID_user)->get();
 
         if ($cartItems->isEmpty()) {
@@ -64,7 +62,6 @@ class CartController extends Controller
     {
         $user = Auth::user();
 
-        // Mencari item keranjang berdasarkan ID
         $cartItem = Cart::where('ID_user', $user->ID_user)
                         ->where('ID_keranjang', $id)
                         ->first();
@@ -73,7 +70,6 @@ class CartController extends Controller
             return response()->json(['message' => 'Item keranjang tidak ditemukan.'], 404);
         }
 
-        // Menghapus item dari keranjang
         $cartItem->delete();
 
         return response()->json(['message' => 'Produk berhasil dihapus dari keranjang.']);
@@ -91,86 +87,6 @@ class CartController extends Controller
         return response()->json($cart);
     }
 
-    public function addProductToCart(Request $request, $cartId)
-    {
-        // Validasi data input
-        $validatedData = $request->validate([
-           'ID_produk' => 'required|exists:produk,ID_produk',
-           'quantity' => 'required|integer|min:1',
-        ]);
-
-            // Mendapatkan produk berdasarkan ID_produk
-        $product = Produk::find($validatedData['ID_produk']);
-        if (!$product) {
-            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
-        }
-
-        // Debugging: Menampilkan ID keranjang dan memeriksa apakah keranjang ada
-        Log::info('Mencoba menambah produk ke keranjang', ['cartId' => $cartId]);
-
-        // Log produk untuk memastikan produk ditemukan
-        Log::info('Produk ditemukan', ['ID_produk' => $product->ID_produk, 'price_per_item' => $product->fish_price]);
-
-        // Menambahkan produk ke Cart (tabel Cart, bukan DetailKeranjang)
-        $cart = Cart::findOrFail($cartId);
-        $cart->ID_user = Auth::user()->ID_user;
-        $cart->save(); // Simpan perubahan pada Car
-
-        // Membuat atau memperbarui detail keranjang dengan produk dan quantity
-        $detailKeranjang = DetailKeranjang::firstOrCreate(
-            [
-                'ID_keranjang' => $cartId,
-                'ID_produk' => $validatedData['ID_produk']
-            ],
-            [
-                'quantity' => $validatedData['quantity'],
-                'price_per_item' => $product->fish_price,  // Menetapkan harga per item berdasarkan produk
-            ]
-        );
-
-        // Jika detail keranjang sudah ada, update kuantitas dan harga total
-        if (!$detailKeranjang->wasRecentlyCreated) {
-            $detailKeranjang->quantity += $validatedData['quantity'];
-        }
-
-        // Update total harga setelah menambahkan kuantitas
-        $detailKeranjang->total_price = $detailKeranjang->quantity * $detailKeranjang->price_per_item;
-        $detailKeranjang->save();
-
-        // Log untuk memastikan detail keranjang tersimpan dengan benar
-        Log::info('Produk berhasil ditambahkan ke keranjang', ['detailKeranjang' => $detailKeranjang]);
-
-        // Return response sukses dengan status 201
-        return response()->json([
-            'message' => 'Produk berhasil ditambahkan ke keranjang',
-            'data' => $detailKeranjang
-        ], 201);
-    }
-
-       // Menambahkan produk ke dalam keranjang
-    public function MenambahkanKeKeranjang(Request $request)
-    {
-        $produk = Produk::findOrFail($request->ID_produk);
-        $keranjang = Cart::where('ID_user', $request->ID_user)
-                         ->where('ID_produk', $request->ID_produk)
-                         ->first();
-
-        if ($keranjang) {
-            // Jika produk sudah ada di keranjang, update kuantitasnya
-            $keranjang->order_quantity += $request->order_quantity;
-            $keranjang->save();
-        } else {
-            // Jika produk belum ada di keranjang, buat entri baru
-            Cart::create([
-                'ID_user' => $request->ID_user,
-                'ID_produk' => $request->ID_produk,
-                'order_quantity' => $request->order_quantity
-            ]);
-        }
-
-        return response()->json(['message' => 'Produk berhasil ditambahkan ke keranjang']);
-    }
-
     // Mengupdate kuantitas produk dalam keranjang
     public function updateQuantity(Request $request, $ID_keranjang)
     {
@@ -180,5 +96,119 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Kuantitas produk berhasil diupdate']);
     }
+
+    // Mengurangi kuantitas produk dalam keranjang
+    public function decreaseQuantity(Request $request)
+    {
+        $user = Auth::user();
+
+         $request->validate([
+            'ID_produk' => 'required|exists:produk,ID_produk',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+         $cartItem = Cart::where('ID_user', $user->ID_user)
+                        ->where('ID_produk', $request->ID_produk)
+                        ->first();
+
+        if (!$cartItem) {
+            return response()->json(['message' => 'Produk tidak ditemukan di keranjang'], 404);
+        }
+
+        // Kurangi kuantitas
+        if ($cartItem->order_quantity > $request->quantity) {
+            $cartItem->order_quantity -= $request->quantity;
+            $cartItem->save();
+
+            return response()->json(['message' => 'Kuantitas berhasil dikurangi', 'cart_item' => $cartItem]);
+        } else {
+             $cartItem->delete();
+
+            return response()->json(['message' => 'Produk dihapus dari keranjang karena kuantitas habis']);
+        }
+    }
+
+    // public function addProductToCart(Request $request, $cartId)
+    // {
+    //     // Validasi data input
+    //     $validatedData = $request->validate([
+    //        'ID_produk' => 'required|exists:produk,ID_produk',
+    //        'quantity' => 'required|integer|min:1',
+    //     ]);
+
+    //         // Mendapatkan produk berdasarkan ID_produk
+    //     $product = Produk::find($validatedData['ID_produk']);
+    //     if (!$product) {
+    //         return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+    //     }
+
+    //     // Debugging: Menampilkan ID keranjang dan memeriksa apakah keranjang ada
+    //     Log::info('Mencoba menambah produk ke keranjang', ['cartId' => $cartId]);
+
+    //     // Log produk untuk memastikan produk ditemukan
+    //     Log::info('Produk ditemukan', ['ID_produk' => $product->ID_produk, 'price_per_item' => $product->fish_price]);
+
+    //     // Menambahkan produk ke Cart (tabel Cart, bukan DetailKeranjang)
+    //     $cart = Cart::findOrFail($cartId);
+    //     $cart->ID_user = Auth::user()->ID_user;
+    //     $cart->save(); // Simpan perubahan pada Car
+
+    //     // Membuat atau memperbarui detail keranjang dengan produk dan quantity
+    //     $detailKeranjang = DetailKeranjang::firstOrCreate(
+    //         [
+    //             'ID_keranjang' => $cartId,
+    //             'ID_produk' => $validatedData['ID_produk']
+    //         ],
+    //         [
+    //             'quantity' => $validatedData['quantity'],
+    //             'price_per_item' => $product->fish_price,  // Menetapkan harga per item berdasarkan produk
+    //         ]
+    //     );
+
+    //     // Jika detail keranjang sudah ada, update kuantitas dan harga total
+    //     if (!$detailKeranjang->wasRecentlyCreated) {
+    //         $detailKeranjang->quantity += $validatedData['quantity'];
+    //     }
+
+    //     // Update total harga setelah menambahkan kuantitas
+    //     $detailKeranjang->total_price = $detailKeranjang->quantity * $detailKeranjang->price_per_item;
+    //     $detailKeranjang->save();
+
+    //     // Log untuk memastikan detail keranjang tersimpan dengan benar
+    //     Log::info('Produk berhasil ditambahkan ke keranjang', ['detailKeranjang' => $detailKeranjang]);
+
+    //     // Return response sukses dengan status 201
+    //     return response()->json([
+    //         'message' => 'Produk berhasil ditambahkan ke keranjang',
+    //         'data' => $detailKeranjang
+    //     ], 201);
+    // }
+
+    //    // Menambahkan produk ke dalam keranjang
+    // public function MenambahkanKeKeranjang(Request $request)
+    // {
+    //     $produk = Produk::findOrFail($request->ID_produk);
+    //     $keranjang = Cart::where('ID_user', $request->ID_user)
+    //                      ->where('ID_produk', $request->ID_produk)
+    //                      ->first();
+
+    //     if ($keranjang) {
+    //         // Jika produk sudah ada di keranjang, update kuantitasnya
+    //         $keranjang->order_quantity += $request->order_quantity;
+    //         $keranjang->save();
+    //     } else {
+    //         // Jika produk belum ada di keranjang, buat entri baru
+    //         Cart::create([
+    //             'ID_user' => $request->ID_user,
+    //             'ID_produk' => $request->ID_produk,
+    //             'order_quantity' => $request->order_quantity
+    //         ]);
+    //     }
+
+    //     return response()->json(['message' => 'Produk berhasil ditambahkan ke keranjang']);
+    // }
+
+
+
 }
 

@@ -29,4 +29,13 @@ class Produk extends Model
     {
         return $this->belongsTo(Toko::class, 'ID_toko', 'ID_toko');
     }
+
+    public function pesanans()
+{
+    return $this->belongsToMany(Pesanan::class, 'pesanan_produk', 'ID_produk', 'ID_pesanan')
+                ->withPivot('quantity', 'price_per_item');
+}
+
+
+
 }

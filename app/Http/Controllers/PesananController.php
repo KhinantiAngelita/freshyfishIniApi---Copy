@@ -12,6 +12,97 @@ use Illuminate\Support\Facades\Auth;
 
 class PesananController extends Controller
 {
+
+    public function checkout(Request $request)
+{
+    $user = Auth::user();
+
+    // Ambil semua keranjang milik user yang sedang login
+    $cartItems = Cart::where('ID_user', $user->ID_user)->get();
+
+    if ($cartItems->isEmpty()) {
+        return response()->json(['message' => 'Keranjang kosong'], 400);
+    }
+
+    // Hitung total harga
+    $totalPrice = 0;
+    foreach ($cartItems as $cartItem) {
+        $product = $cartItem->produk;
+        $totalPrice += $cartItem->order_quantity * $product->fish_price;
+
+        if ($product->fish_weight < $cartItem->order_quantity) {
+            return response()->json([
+                'message' => 'Stok ikan tidak cukup untuk produk ' . $product->fish_type
+            ], 400);
+        }
+    }
+
+    $virtualAccount = 'VA' . rand(1000000000000000, 9999999999999999);
+
+    // Buat pesanan baru
+    $pesanan = Pesanan::create([
+        'ID_user' => $user->ID_user,
+        'total_price' => $totalPrice,
+        'order_date' => now(),
+        'status' => 'pending',
+        'payment_method' => $request->payment_method,
+        'virtual_account' => $virtualAccount,
+    ]);
+
+// Kaitkan produk yang dibeli dengan pesanan dan kurangi stok ikan
+foreach ($cartItems as $cartItem) {
+     $product = $cartItem->produk;
+
+    // Kurangi stok ikan berdasarkan kuantitas yang dipesan
+    $product->fish_weight -= $cartItem->order_quantity;
+    $product->save();
+
+    // Kaitkan produk dengan pesanan
+    $pesanan->produk()->attach($cartItem->ID_produk, [
+        'quantity' => $cartItem->order_quantity,
+        'price_per_item' => $product->fish_price
+    ]);
+}
+
+    // Hapus barang di keranjang setelah checkout
+    Cart::where('ID_user', $user->ID_user)->delete();
+
+    // Kembalikan response sukses dengan data pesanan dan nomor virtual account
+    return response()->json([
+        'message' => 'Pesanan berhasil dibuat',
+        'pesanan' => $pesanan,
+        'virtual_account' => $virtualAccount, // Nomor virtual account
+    ], 201);
+}
+
+public function markAndShowOrderHistory($ID_user)
+{
+     $orders = Pesanan::where('ID_user', $ID_user)->where('status', 'pending')->get();
+
+     if ($orders->isEmpty()) {
+        return response()->json(['message' => 'Tidak ada pesanan yang berstatus pending'], 404);
+    }
+
+     foreach ($orders as $order) {
+        $order->status = 'complete';
+        $order->save();
+    }
+
+    // Mengambil semua histori pesanan dengan status 'complete' untuk ID_user tersebut
+    $completedOrders = Pesanan::where('ID_user', $ID_user)->where('status', 'complete')->get();
+
+    // Cek jika tidak ada histori pesanan dengan status 'complete'
+    if ($completedOrders->isEmpty()) {
+        return response()->json(['message' => 'Tidak ada histori pesanan yang ditemukan'], 404);
+    }
+
+     return response()->json([
+        'ID_user' => $ID_user,
+        'order_history' => $completedOrders
+    ]);
+}
+
+    //belum dipakai
     // Menampilkan pesanan untuk toko user yang login
     public function index()
     {
@@ -20,6 +111,7 @@ class PesananController extends Controller
         return response()->json($pesanan);
     }
 
+    // ga jadi dipake,
     // Membuat pesanan baru
     public function store(Request $request)
     {
@@ -54,11 +146,11 @@ class PesananController extends Controller
         return response()->json($pesanan, 201);
     }
 
+    //ga jadi dipake
     public function createOrder(Request $request)
     {
         $user = Auth::user();
 
-        // Mengambil semua item di keranjang pengguna
         $cartItems = DetailKeranjang::whereHas('cart', function ($query) use ($user) {
             $query->where('ID_user', $user->ID_user);
         })->get();
@@ -69,7 +161,6 @@ class PesananController extends Controller
 
         $total_price = $cartItems->sum(fn($item) => $item->quantity * $item->price_per_item);
 
-        // Membuat nomor virtual account acak
         $virtualAccount = 'VA' . rand(10000000, 99999999);
 
         $pesanan = Pesanan::create([
@@ -81,7 +172,6 @@ class PesananController extends Controller
             'virtual_account' => $virtualAccount,
         ]);
 
-        // Memindahkan data produk dari keranjang ke pesanan
         foreach ($cartItems as $item) {
             $pesanan->produk()->attach($item->ID_produk, [
                 'quantity' => $item->quantity,
@@ -89,7 +179,6 @@ class PesananController extends Controller
             ]);
         }
 
-        // Menghapus isi keranjang setelah pesanan dibuat
         DetailKeranjang::whereHas('cart', function ($query) use ($user) {
             $query->where('ID_user', $user->ID_user);
         })->delete();
@@ -101,10 +190,8 @@ class PesananController extends Controller
         ], 201);
     }
 
-    // Membuat pesanan dan menghasilkan nomor virtual account
     public function membuatPesanan(Request $request)
     {
-        // Mengambil data dari keranjang berdasarkan ID_user
        $detailKeranjang = DetailKeranjang::where('ID_detail_keranjang', $request->ID_detail_keranjang)->get();
 
         $totalPrice = 0;
@@ -112,18 +199,16 @@ class PesananController extends Controller
             $totalPrice += $detail->quantity * $detail->produk->fish_price;
         }
 
-        // Membuat pesanan baru
         $pesanan = Pesanan::create([
             'order_quantity' => count($detailKeranjang),
             'total_price' => $totalPrice,
             'order_date' => now(),
             'status' => 'pending', // Status bisa disesuaikan
             'ID_user' => $request->ID_user,
-            'ID_keranjang' => $request->ID_keranjang,
+            'ID_keranjang' => $cartItems->first()->ID_keranjang,     // 'ID_keranjang' => $request->ID_keranjang,
             'payment_method' => $request->payment_method,
         ]);
 
-        // Menambahkan nomor virtual account (random)
         $virtualAccountNumber = 'VA' . rand(1000000000000000, 9999999999999999);
 
         return response()->json([
@@ -132,7 +217,6 @@ class PesananController extends Controller
         ]);
     }
 
-    // Fungsi untuk mengambil semua data pesanan yang ada di keranjang pengguna
 public function getPesananFromCart()
 {
     $user = Auth::user(); // Ambil data user yang sedang login
@@ -186,5 +270,8 @@ public function getPesananFromCart()
         'virtual_account' => $virtualAccount, // Menampilkan nomor virtual account
     ], 201);
 }
+
+
+
 
 }
