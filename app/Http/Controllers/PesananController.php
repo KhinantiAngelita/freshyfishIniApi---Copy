@@ -483,7 +483,7 @@ public function markAndShowOrderHistory($ID_user)
             'order_date' => now(),
             'status' => 'pending', // Status bisa disesuaikan
             'ID_user' => $request->ID_user,
-            'ID_keranjang' => $cartItems->first()->ID_keranjang,     // 'ID_keranjang' => $request->ID_keranjang,
+            // 'ID_keranjang' => $cartItems->first()->ID_keranjang,     // 'ID_keranjang' => $request->ID_keranjang,
             'payment_method' => $request->payment_method,
         ]);
 
