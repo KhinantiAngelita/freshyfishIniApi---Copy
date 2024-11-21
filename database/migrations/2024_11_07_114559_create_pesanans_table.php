@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pesanans', function (Blueprint $table) {
             $table->id('ID_pesanan');
-            $table->integer('order_quantity');
+            //$table->integer('order_quantity');
             $table->decimal('total_price', 10, 2);
             $table->dateTime('order_date');
             $table->string('status');
