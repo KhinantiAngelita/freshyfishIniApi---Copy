@@ -16,12 +16,12 @@ class DatabaseSeeder extends Seeder
         // Memanggil seeder untuk tabel roles, users, dan toko
         $this->call([
             RoleSeeder::class,
-            UserSeeder::class,
-            TokoSeeder::class,
-            ProdukSeeder::class,
-            CartSeeder::class,
-            PesananSeeder::class,
-            ArticleSeeder::class,
+            //UserSeeder::class,
+            //TokoSeeder::class,
+            //ProdukSeeder::class,
+            //CartSeeder::class,
+            //PesananSeeder::class,
+            //ArticleSeeder::class,
         ]);
     }
 }

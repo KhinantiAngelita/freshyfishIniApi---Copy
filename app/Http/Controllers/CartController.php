@@ -57,25 +57,42 @@ class CartController extends Controller
         return response()->json($cartItems);
     }
 
-    // Menghapus produk dari keranjang
-    public function removeFromCart($ID_produk)
-    {
-        $user = Auth::user();
+// Menghapus produk dari keranjang berdasarkan ID produk di tabel Cart
+public function removeFromCart($ID_produk)
+{
+    // Mendapatkan user yang sedang login
+    $user = Auth::user();
 
-        $cartItem = DetailKeranjang::whereHas('cart', function ($query) use ($user) {
-            $query->where('ID_user', $user->ID_user);
-        })
+    if (!$user) {
+        return response()->json(['message' => 'Pengguna tidak terautentikasi.'], 401);
+    }
+
+    // Cari item keranjang berdasarkan ID produk dan ID user
+    $cartItem = Cart::where('ID_user', $user->ID_user)
         ->where('ID_produk', $ID_produk)
         ->first();
 
-        if (!$cartItem) {
-            return response()->json(['message' => 'Item keranjang tidak ditemukan dalam keranjang.'], 404);
-        }
-
-        $cartItem->delete();
-
-        return response()->json(['message' => 'Produk berhasil dihapus dari keranjang.']);
+    // Jika item tidak ditemukan, berikan pesan kesalahan
+    if (!$cartItem) {
+        return response()->json([
+            'message' => 'Item keranjang tidak ditemukan.',
+            'debug' => [
+                'user_id' => $user->ID_user,
+                'product_id' => $ID_produk,
+                'cart_items' => Cart::where('ID_user', $user->ID_user)->get() // Debug untuk melihat semua item dalam keranjang user
+            ]
+        ], 404);
     }
+
+    // Hapus item dari keranjang
+    $cartItem->delete();
+
+    // Berikan respons sukses
+    return response()->json([
+        'message' => 'Produk berhasil dihapus dari keranjang.',
+        'deleted_item' => $cartItem
+    ]);
+}
 
     public function getCartDetails($cartId)
     {
