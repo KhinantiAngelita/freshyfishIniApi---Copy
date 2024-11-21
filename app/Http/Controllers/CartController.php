@@ -30,7 +30,7 @@ class CartController extends Controller
             // Jika produk sudah ada, tambahkan kuantitasnya
             $existingCartItem->order_quantity += $request->order_quantity;
             $existingCartItem->save();
-            return response()->json(['message' => 'Produk ditambahkan ke keranjang. Kuantitas diperbarui.'], 200);
+            return response()->json(['message' => 'Produk ditambahkan ke keranjang ceunah. Kuantitas diperbarui.'], 200);
         } else {
             // Jika produk belum ada di keranjang, buat item baru
             $cartItem = Cart::create([
