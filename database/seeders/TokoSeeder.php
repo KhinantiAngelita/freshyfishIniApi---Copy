@@ -30,19 +30,19 @@ class TokoSeeder extends Seeder
         Toko::create([
             'store_name' => 'Toko Ikan Ori',
             'store_address' => 'Jl. Laut No.1',
-            'product_category' => 'Ikan Laut'
+            'description_store' => 'Ikan Laut'
         ]);
 
         Toko::create([
             'store_name' => 'Toko Ikan Wah',
             'store_address' => 'Jl. Danau Indah No.3',
-            'product_category' => 'Ikan Tawar'
+            'description_store' => 'Ikan Tawar'
         ]);
 
         Toko::create([
             'store_name' => 'Toko Ikan Payau',
             'store_address' => 'Jl. Payau Sejahtera No.7',
-            'product_category' => 'Ikan Payau'
+            'description_store' => 'Ikan Payau'
         ]);
     }
 }

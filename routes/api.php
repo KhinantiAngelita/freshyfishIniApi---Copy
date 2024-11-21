@@ -9,6 +9,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\DetailKeranjangController;
 use App\Http\Controllers\PesananController;
+use App\Http\Controllers\ArticleController;
+
 
 //AUTH
 Route::prefix('auth')->group(function() {
@@ -19,6 +21,7 @@ Route::prefix('auth')->group(function() {
     Route::get('/user/{id}', [UserController::class, 'showProfile'])->middleware('auth:sanctum');
     Route::put('/user/{id}', [UserController::class, 'updateProfile'])->middleware('auth:sanctum');
     Route::delete('/user/{id}', [UserController::class, 'deleteProfile'])->middleware('auth:sanctum');
+    Route::post('/user/upload-image', [UserController::class, 'uploadImage'])->middleware('auth:sanctum');
 });
 
 //TOKO
@@ -62,6 +65,12 @@ Route::post('/membuatpesanan', [PesananController::class, 'membuatPesanan'])->mi
 Route::post('/pesanan/create', [PesananController::class, 'createOrder'])->middleware('auth:sanctum');
 Route::post('/pesanan/makeOrder', [PesananController::class, 'getPesananFromCart'])->middleware('auth:sanctum');
 
+//ARTIKEL
+Route::get('/articles', [ArticleController::class, 'index'])->middleware('auth:sanctum');
+Route::get('/articles/{id}', [ArticleController::class, 'show'])->middleware('auth:sanctum');
+Route::post('/articles', [ArticleController::class, 'store'])->middleware('auth:sanctum');
+Route::put('/articles/{id}', [ArticleController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->middleware('auth:sanctum');
 
 //Roles
 Route::post('/user/upgrade-to-seller', [RoleController::class, 'upgradeToSeller'])->middleware('auth:sanctum');

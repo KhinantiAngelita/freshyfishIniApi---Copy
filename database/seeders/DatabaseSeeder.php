@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             ProdukSeeder::class,
             CartSeeder::class,
             PesananSeeder::class,
-
+            ArticleSeeder::class,
         ]);
     }
 }

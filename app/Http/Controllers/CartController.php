@@ -58,16 +58,18 @@ class CartController extends Controller
     }
 
     // Menghapus produk dari keranjang
-    public function removeFromCart($id)
+    public function removeFromCart($ID_produk)
     {
         $user = Auth::user();
 
-        $cartItem = Cart::where('ID_user', $user->ID_user)
-                        ->where('ID_keranjang', $id)
-                        ->first();
+        $cartItem = DetailKeranjang::whereHas('cart', function ($query) use ($user) {
+            $query->where('ID_user', $user->ID_user);
+        })
+        ->where('ID_produk', $ID_produk)
+        ->first();
 
         if (!$cartItem) {
-            return response()->json(['message' => 'Item keranjang tidak ditemukan.'], 404);
+            return response()->json(['message' => 'Item keranjang tidak ditemukan dalam keranjang.'], 404);
         }
 
         $cartItem->delete();
