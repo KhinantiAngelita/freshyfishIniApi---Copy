@@ -59,6 +59,7 @@ Route::get('/detail-keranjang/{ID_user}', [DetailKeranjangController::class, 'sh
 //PESANAN
 Route::post('/pesanan/buatpesanan', [PesananController::class, 'checkout'])->middleware('auth:sanctum');
 Route::get('/pesanan/histori/{id}', [PesananController::class, 'markAndShowOrderHistory'])->middleware('auth:sanctum');
+Route::get('/pesanan/histori', [PesananController::class, 'showAllOrdersByStore'])->middleware('auth:sanctum');
 Route::get('/pesanan', [PesananController::class, 'index'])->middleware('auth:sanctum');
 Route::post('/pesanan', [PesananController::class, 'store'])->middleware('auth:sanctum');
 Route::post('/membuatpesanan', [PesananController::class, 'membuatPesanan'])->middleware('auth:sanctum');

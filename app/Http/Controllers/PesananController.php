@@ -107,6 +107,35 @@ public function markAndShowOrderHistory($ID_user)
     ]);
 }
 
+public function showAllOrdersByStore()
+{
+    // Ambil data user yang sedang login
+    $user = Auth::user();
+
+    // Pastikan user memiliki toko
+    if (!$user->ID_toko) {
+        return response()->json(['message' => 'User tidak memiliki toko.'], 400);
+    }
+
+    // Ambil semua pesanan yang terkait dengan toko pengguna yang sedang login
+    $orders = Pesanan::whereHas('produk', function ($query) use ($user) {
+        $query->where('ID_toko', $user->ID_toko);
+    })->get();
+
+    // Cek jika tidak ada pesanan untuk toko tersebut
+    if ($orders->isEmpty()) {
+        return response()->json(['message' => 'Tidak ada pesanan untuk toko ini.'], 404);
+    }
+
+    // Mengembalikan data pesanan
+    return response()->json([
+        'ID_toko' => $user->ID_toko,
+        'orders' => $orders
+    ]);
+}
+
+
+
     //belum dipakai
     // Menampilkan pesanan untuk toko user yang login
     public function index()
