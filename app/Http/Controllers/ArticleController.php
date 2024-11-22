@@ -63,7 +63,6 @@ class ArticleController extends Controller
         return response()->json($article, 201);
     }
 
-    // Mengupdate artikel
     public function update(Request $request, $id)
     {
         $article = Article::find($id);
@@ -73,36 +72,33 @@ class ArticleController extends Controller
         }
 
         $user = Auth::user();
-
-        // Cek apakah pengguna memiliki akses untuk mengedit artikel
         if ($article->ID_user != $user->ID_user) {
             return response()->json(['message' => 'Anda tidak memiliki akses untuk mengedit artikel ini'], 403);
         }
+
+        // Cek apakah data diterima
+        \Log::info($request->all()); // Log data request yang diterima
 
         // Validasi data artikel yang diterima
         $validatedData = $request->validate([
             'title' => 'sometimes|string|max:255',
             'category_content' => 'sometimes|string',
             'content' => 'sometimes|string',
-            'photo_content' => 'sometimes|image|mimes:jpg,png,jpeg', // Validasi foto jika ada
+            'photo_content' => 'sometimes|image|mimes:jpg,png,jpeg',
         ]);
 
-        // Update foto jika ada foto baru
         if ($request->hasFile('photo_content')) {
-            // Hapus foto lama jika ada
             if ($article->photo_content && Storage::exists('public/articles/' . $article->photo_content)) {
                 Storage::delete('public/articles/' . $article->photo_content);
             }
 
-            // Simpan foto baru
             $photo = $request->file('photo_content');
             $photoName = time() . '.' . $photo->getClientOriginalExtension();
-            $photo->storeAs('public/articles', $photoName); // Menyimpan foto baru
+            $photo->storeAs('public/articles', $photoName);
 
             $validatedData['photo_content'] = $photoName;
         }
 
-        // Update artikel
         $article->update([
             'title' => $validatedData['title'] ?? $article->title,
             'category_content' => $validatedData['category_content'] ?? $article->category_content,

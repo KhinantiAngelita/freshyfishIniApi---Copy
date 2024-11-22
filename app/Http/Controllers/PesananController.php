@@ -82,7 +82,7 @@ class PesananController extends Controller
 
 public function markAndShowOrderHistory($ID_user)
 {
-     $orders = Pesanan::where('ID_user', $ID_user)->where('status', 'pending')->get();
+     $orders = Pesanan::where('ID_user', $ID_user)->get();
 
      if ($orders->isEmpty()) {
         return response()->json(['message' => 'Tidak ada pesanan yang berstatus pending'], 404);
@@ -94,7 +94,7 @@ public function markAndShowOrderHistory($ID_user)
     }
 
     // Mengambil semua histori pesanan dengan status 'complete' untuk ID_user tersebut
-    $completedOrders = Pesanan::where('ID_user', $ID_user)->where('status', 'complete')->get();
+    $completedOrders = Pesanan::where('ID_user', $ID_user)->get();
 
     // Cek jika tidak ada histori pesanan dengan status 'complete'
     if ($completedOrders->isEmpty()) {
