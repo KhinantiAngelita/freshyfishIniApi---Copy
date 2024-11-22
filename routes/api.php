@@ -26,7 +26,7 @@ Route::prefix('auth')->group(function() {
 
 //TOKO
 Route::post('/toko', [TokoController::class, 'openStore'])->middleware('auth:sanctum');
-Route::get('/toko/{id}', [TokoController::class, 'show'])->middleware('auth:sanctum');
+Route::get('/toko', [TokoController::class, 'show'])->middleware('auth:sanctum');
 Route::put('/toko/{id}', [TokoController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/toko/delete/{id}', [TokoController::class, 'closeStore'])->middleware('auth:sanctum');
 // Route::delete('/toko/{id}', [TokoController::class, 'delete'])->middleware('auth:sanctum');
@@ -69,13 +69,11 @@ Route::post('/pesanan/create', [PesananController::class, 'createOrder'])->middl
 Route::post('/pesanan/makeOrder', [PesananController::class, 'getPesananFromCart'])->middleware('auth:sanctum');
 
 //ARTIKEL
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/articles', [ArticleController::class, 'index']);  // Menampilkan seluruh artikel
-    Route::get('/articles/{id}', [ArticleController::class, 'show']);  // Menampilkan artikel berdasarkan ID
-    Route::post('/articles', [ArticleController::class, 'store']);  // Membuat artikel baru
-    Route::put('/articles/{id}', [ArticleController::class, 'update']);  // Mengupdate artikel
-    Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);  // Menghapus artikel
-});
+Route::get('/articles', [ArticleController::class, 'index']);  // Menampilkan seluruh artikel
+Route::get('/articles/{id}', [ArticleController::class, 'show']);  // Menampilkan artikel berdasarkan ID
+Route::post('/articles', [ArticleController::class, 'store']);  // Membuat artikel baru
+Route::put('/articles/{id}', [ArticleController::class, 'update']);  // Mengupdate artikel
+Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);  // Menghapus artikel
 
 //Roles
 Route::post('/user/upgrade-to-seller', [RoleController::class, 'upgradeToSeller'])->middleware('auth:sanctum');

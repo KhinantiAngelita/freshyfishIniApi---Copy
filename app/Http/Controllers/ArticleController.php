@@ -65,21 +65,26 @@ class ArticleController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Mencari artikel berdasarkan ID
         $article = Article::find($id);
 
+        // Jika artikel tidak ditemukan
         if (!$article) {
             return response()->json(['message' => 'Artikel tidak ditemukan'], 404);
         }
 
+        // Mengambil user yang sedang login
         $user = Auth::user();
+
+        // Cek jika user yang login adalah pemilik artikel
         if ($article->ID_user != $user->ID_user) {
             return response()->json(['message' => 'Anda tidak memiliki akses untuk mengedit artikel ini'], 403);
         }
 
-        // Cek apakah data diterima
-        \Log::info($request->all()); // Log data request yang diterima
+        // Log data request yang diterima untuk debugging
+        \Log::info('Request Data:', ['data' => $request->all()]);
 
-        // Validasi data artikel yang diterima
+        // Validasi data yang diterima dari request
         $validatedData = $request->validate([
             'title' => 'sometimes|string|max:255',
             'category_content' => 'sometimes|string',
@@ -87,27 +92,40 @@ class ArticleController extends Controller
             'photo_content' => 'sometimes|image|mimes:jpg,png,jpeg',
         ]);
 
+        // Cek apakah ada file foto yang diupload
         if ($request->hasFile('photo_content')) {
+            // Hapus foto lama jika ada
             if ($article->photo_content && Storage::exists('public/articles/' . $article->photo_content)) {
                 Storage::delete('public/articles/' . $article->photo_content);
             }
 
+            // Simpan file foto baru
             $photo = $request->file('photo_content');
             $photoName = time() . '.' . $photo->getClientOriginalExtension();
             $photo->storeAs('public/articles', $photoName);
 
+            // Masukkan nama file foto ke validated data
             $validatedData['photo_content'] = $photoName;
         }
 
-        $article->update([
-            'title' => $validatedData['title'] ?? $article->title,
-            'category_content' => $validatedData['category_content'] ?? $article->category_content,
-            'content' => $validatedData['content'] ?? $article->content,
-            'photo_content' => $validatedData['photo_content'] ?? $article->photo_content,
-        ]);
+        // Update artikel dengan data yang sudah tervalidasi
+        try {
+            $article->update([
+                'title' => $validatedData['title'] ?? $article->title,
+                'category_content' => $validatedData['category_content'] ?? $article->category_content,
+                'content' => $validatedData['content'] ?? $article->content,
+                'photo_content' => $validatedData['photo_content'] ?? $article->photo_content,
+            ]);
+        } catch (\Exception $e) {
+            // Log jika ada kesalahan saat update
+            \Log::error('Update failed:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Gagal memperbarui artikel'], 500);
+        }
 
+        // Kembalikan artikel yang sudah terupdate sebagai response
         return response()->json($article);
     }
+
 
     // Menghapus artikel
     public function destroy($id)
