@@ -17,8 +17,9 @@ return new class extends Migration
             $table->string('title');
             $table->string('category_content');
             $table->text('content');
+            $table->string('photo_content')->nullable(); // Kolom photo_content
             $table->timestamps();
-
+            
             $table->foreign('ID_user')->references('ID_user')->on('users')->onDelete('cascade');
         });
     }

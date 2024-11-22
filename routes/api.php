@@ -67,11 +67,13 @@ Route::post('/pesanan/create', [PesananController::class, 'createOrder'])->middl
 Route::post('/pesanan/makeOrder', [PesananController::class, 'getPesananFromCart'])->middleware('auth:sanctum');
 
 //ARTIKEL
-Route::get('/articles', [ArticleController::class, 'index'])->middleware('auth:sanctum');
-Route::get('/articles/{id}', [ArticleController::class, 'show'])->middleware('auth:sanctum');
-Route::post('/articles', [ArticleController::class, 'store'])->middleware('auth:sanctum');
-Route::put('/articles/{id}', [ArticleController::class, 'update'])->middleware('auth:sanctum');
-Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/articles', [ArticleController::class, 'index']);  // Menampilkan seluruh artikel
+    Route::get('/articles/{id}', [ArticleController::class, 'show']);  // Menampilkan artikel berdasarkan ID
+    Route::post('/articles', [ArticleController::class, 'store']);  // Membuat artikel baru
+    Route::put('/articles/{id}', [ArticleController::class, 'update']);  // Mengupdate artikel
+    Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);  // Menghapus artikel
+});
 
 //Roles
 Route::post('/user/upgrade-to-seller', [RoleController::class, 'upgradeToSeller'])->middleware('auth:sanctum');
