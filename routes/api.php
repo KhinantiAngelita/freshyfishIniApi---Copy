@@ -40,6 +40,8 @@ Route::get('/produk/{id}', [ProdukController::class, 'getProdukById'])->middlewa
 Route::post('/produk', [ProdukController::class, 'store'])->middleware('auth:sanctum');
 Route::post('/produk/{id}', [ProdukController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/produk/{id}', [ProdukController::class, 'delete'])->middleware('auth:sanctum');
+Route::get('/produk/habitat/{habitat}', [ProdukController::class, 'getProdukByHabitat'])->middleware('auth:sanctum');
+
 
 
 //KERANJANG

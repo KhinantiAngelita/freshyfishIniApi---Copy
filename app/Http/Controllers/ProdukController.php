@@ -137,4 +137,24 @@ class ProdukController extends Controller
         return response()->json($produk, 200);
     }
 
+// Mendapatkan data ikan berdasarkan habitat
+public function getProdukByHabitat($habitat)
+{
+    // Validasi habitat yang diterima
+    $validHabitats = ['Laut', 'Air Tawar', 'Air Payau'];
+    if (!in_array($habitat, $validHabitats)) {
+        return response()->json(['message' => 'Habitat tidak valid'], 400);
+    }
+
+    // Ambil data produk berdasarkan habitat
+    $produk = Produk::where('habitat', $habitat)->get();
+
+    if ($produk->isEmpty()) {
+        return response()->json(['message' => 'Tidak ada produk dengan habitat ini'], 404);
+    }
+
+    return response()->json($produk, 200);
+}
+
+
 }
