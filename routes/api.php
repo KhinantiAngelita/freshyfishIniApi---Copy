@@ -26,7 +26,7 @@ Route::prefix('auth')->group(function() {
 
 //TOKO
 Route::post('/toko', [TokoController::class, 'openStore'])->middleware('auth:sanctum');
-Route::get('/toko', [TokoController::class, 'show'])->middleware('auth:sanctum');
+Route::get('/toko/{id}', [TokoController::class, 'show'])->middleware('auth:sanctum');
 Route::put('/toko/{id}', [TokoController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/toko/delete/{id}', [TokoController::class, 'closeStore'])->middleware('auth:sanctum');
 // Route::delete('/toko/{id}', [TokoController::class, 'delete'])->middleware('auth:sanctum');
