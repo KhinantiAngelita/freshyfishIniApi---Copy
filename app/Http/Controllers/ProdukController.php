@@ -141,7 +141,7 @@ class ProdukController extends Controller
 public function getProdukByHabitat($habitat)
 {
     // Validasi habitat yang diterima
-    $validHabitats = ['Laut', 'Air Tawar', 'Air Payau'];
+    $validHabitats = ['Ikan Laut', 'Ikan Tawar', 'Ikan Payau'];
     if (!in_array($habitat, $validHabitats)) {
         return response()->json(['message' => 'Habitat tidak valid'], 400);
     }
