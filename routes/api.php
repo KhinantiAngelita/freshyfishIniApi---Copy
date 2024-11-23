@@ -69,11 +69,13 @@ Route::post('/pesanan/create', [PesananController::class, 'createOrder'])->middl
 Route::post('/pesanan/makeOrder', [PesananController::class, 'getPesananFromCart'])->middleware('auth:sanctum');
 
 //ARTIKEL
-Route::get('/articles', [ArticleController::class, 'index']);  // Menampilkan seluruh artikel
-Route::get('/articles/{id}', [ArticleController::class, 'show']);  // Menampilkan artikel berdasarkan ID
-Route::post('/articles', [ArticleController::class, 'store']);  // Membuat artikel baru
-Route::put('/articles/{id}', [ArticleController::class, 'update']);  // Mengupdate artikel
-Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);  // Menghapus artikel
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/articles', [ArticleController::class, 'index']);
+    Route::get('/articles/{id}', [ArticleController::class, 'show']);
+    Route::post('/articles', [ArticleController::class, 'store']);
+    Route::put('/articles/{id}', [ArticleController::class, 'update']);
+    Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);
+});
 
 //Roles
 Route::post('/user/upgrade-to-seller', [RoleController::class, 'upgradeToSeller'])->middleware('auth:sanctum');
