@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 class ArticleController extends Controller
 {
     // Menampilkan semua artikel
-    public function GetAllArticle()
+    public function index()
     {
         return response()->json(Article::all());
         // $articles = Article::with('user:id,name')->get();
