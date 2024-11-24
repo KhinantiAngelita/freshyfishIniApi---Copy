@@ -75,6 +75,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/articles', [ArticleController::class, 'store']);
     Route::put('/articles/{id}', [ArticleController::class, 'update']);
     Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);
+    Route::get('/articles/category/{category}', [ArticleController::class, 'filterByCategory']);
+
 });
 
 //Roles

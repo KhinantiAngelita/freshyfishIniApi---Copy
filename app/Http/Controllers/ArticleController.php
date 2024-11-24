@@ -20,7 +20,8 @@ class ArticleController extends Controller
     // Menampilkan artikel berdasarkan ID
     public function show($id)
     {
-        $article = Article::with('user:id,name')->find($id);
+        // Memuat artikel berdasarkan ID_article dan memuat relasi user dengan kolom yang sesuai
+        $article = Article::with('user:ID_user,name')->find($id);
 
         if (!$article) {
             return response()->json(['message' => 'Artikel tidak ditemukan'], 404);
@@ -31,7 +32,7 @@ class ArticleController extends Controller
             $article->photo_url = Storage::url('public/articles/' . $article->photo_content);
         }
 
-        return response()->json($article, 200);
+        return response()->json($article, 200);
     }
 
     // Membuat artikel baru
@@ -153,4 +154,28 @@ class ArticleController extends Controller
 
         return response()->json(['message' => 'Artikel berhasil dihapus'], 200);
     }
+
+    // Menampilkan artikel berdasarkan kategori
+public function filterByCategory($category)
+{
+    // Validasi kategori yang diizinkan
+    $allowedCategories = ['Ikan Laut', 'Ikan Air Tawar', 'Ikan Air Payau'];
+    if (!in_array($category, $allowedCategories)) {
+        return response()->json(['message' => 'Kategori tidak valid'], 400);
+    }
+
+    // Ambil artikel berdasarkan kategori
+    $articles = Article::where('category_content', $category)->get();
+
+    // Tambahkan URL foto artikel jika ada
+    $articles->each(function ($article) {
+        if ($article->photo_content) {
+            $article->photo_url = Storage::url('public/articles/' . $article->photo_content);
+        }
+    });
+
+    // Kembalikan hasil
+    return response()->json($articles, 200);
+}
+
 }
