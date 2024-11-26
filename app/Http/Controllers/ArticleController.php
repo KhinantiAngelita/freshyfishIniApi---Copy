@@ -24,7 +24,7 @@ class ArticleController extends Controller
         $article = Article::with('user:ID_user,name')->find($id);
 
         if (!$article) {
-            return response()->json(['message' => 'Artikel tidak ditemukan'], 404);
+            return response()->json(['message' => 'Artikel Tidak Ditemukan'], 404);
         }
 
         // Menambahkan URL untuk foto artikel jika ada
