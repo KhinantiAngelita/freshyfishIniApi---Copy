@@ -32,7 +32,7 @@ class ArticleController extends Controller
             $article->photo_url = Storage::url('public/articles/' . $article->photo_content);
         }
 
-        return response()->json($article, 200);
+        return response()->json($article, 200);
     }
 
     // Membuat artikel baru
